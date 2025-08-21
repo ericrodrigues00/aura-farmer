@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+<title>Aura Farmer</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background: #1e1e2f;
+    color: #f0f0f0;
+    text-align: center;
+            padding: 20px;
+        }
+  button {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  #game-container {
+    max-width: 800px;
+    margin: auto;
+    background: #2b2b4a;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  .section {
+    margin: 20px 0;
+  }
+        .card {
+    display: inline-block;
+    padding: 15px;
+    margin: 8px;
+    background: #444;
+    border-radius: 8px;
+    border: 2px solid transparent;
+            transition: all 0.3s ease;
+    min-width: 200px;
+    text-align: left;
+        }
+        .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+  }
+  .card.infernal {
+    background: linear-gradient(135deg, #8B0000, #DC143C);
+    border-color: #FF4500;
+  }
+  .card.abissal {
+    background: linear-gradient(135deg, #191970, #000080);
+    border-color: #4169E1;
+  }
+  .card.celestial {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border-color: #FFFF00;
+    color: #000;
+  }
+  .card-rare {
+    border-width: 3px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  }
+  .card-legendary {
+    border-width: 4px;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.7);
+    animation: legendary-glow 2s ease-in-out infinite alternate;
+  }
+  @keyframes legendary-glow {
+    from { box-shadow: 0 0 20px rgba(255, 0, 255, 0.7); }
+    to { box-shadow: 0 0 30px rgba(255, 0, 255, 1); }
+  }
+  .entity-name {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+  .entity-type {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 8px;
+  }
+  .entity-rarity {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .rarity-common { color: #ccc; }
+  .rarity-rare { color: #FFD700; }
+  .rarity-legendary { color: #FF00FF; }
+  .entity-power {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .entity-moves {
+    font-size: 11px;
+    opacity: 0.9;
+  }
+  .move-item {
+    margin: 2px 0;
+    padding-left: 10px;
+  }
+  .upgrade-item {
+    margin: 10px 0;
+    padding: 15px;
+    background: #3a3a5a;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+  .upgrade-item:hover:not(.locked) {
+    border-color: #4CAF50;
+    transform: translateY(-2px);
+  }
+  .upgrade-item.locked {
+    background: #2a2a3a;
+    color: #888;
+    border-color: #555;
+  }
+  .upgrade-item.available {
+    background: #3a5a3a;
+    border-color: #4CAF50;
+  }
+  .upgrade-item.purchased {
+    background: #5a3a5a;
+    border-color: #9C27B0;
+  }
+  .upgrade-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .upgrade-name {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .upgrade-cost {
+    font-size: 14px;
+    color: #FFD700;
+  }
+  .upgrade-description {
+    font-size: 12px;
+    color: #ccc;
+    margin-bottom: 10px;
+  }
+  .upgrade-status {
+    font-size: 12px;
+    font-style: italic;
+  }
+  .upgrade-item.locked .upgrade-status {
+    color: #ff6b6b;
+  }
+  .upgrade-item.available .upgrade-status {
+    color: #4CAF50;
+  }
+  .upgrade-item.purchased .upgrade-status {
+    color: #9C27B0;
+  }
+        .progress-bar {
+            width: 100%;
+    height: 8px;
+    background: #444;
+    border-radius: 4px;
+    margin: 5px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+  .tab-container {
+    margin: 20px 0;
+  }
+  .tab-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  .tab-button {
+    background: #444;
+    color: #ccc;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .tab-button.active {
+    background: #4CAF50;
+    color: white;
+  }
+  .tab-button:hover {
+    background: #555;
+  }
+  .tab-button.active:hover {
+    background: #45a049;
+  }
+  .tab-content {
+    display: none;
+    background: #3a3a5a;
+    padding: 15px;
+    border-radius: 0 5px 5px 5px;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  .purchased-upgrade {
+    background: #5a3a5a;
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 5px;
+    border-left: 4px solid #9C27B0;
+    text-align: left;
+  }
+  .purchased-upgrade-name {
+    font-weight: bold;
+    color: #9C27B0;
+    margin-bottom: 5px;
+  }
+  .purchased-upgrade-description {
+    font-size: 12px;
+    color: #ccc;
+  }
+  .no-upgrades {
+    color: #888;
+    font-style: italic;
+    padding: 20px;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+  }
+  .type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .type-infernal {
+    background: #DC143C;
+            color: white;
+  }
+  .type-abissal {
+    background: #000080;
+    color: white;
+  }
+  .type-celestial {
+    background: #FFD700;
+    color: black;
+        }
+  .battle-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .boss-area, .player-area {
+    width: 48%;
+  }
+  .entity-item {
+    background: #444;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+  }
+  .move-button {
+    background: #2196F3;
+    color: white;
+    padding: 5px 10px;
+    margin: 2px;
+    font-size: 12px;
+  }
+  .move-button:hover {
+    background: #1976D2;
+  }
+  #battle-log {
+    height: 200px;
+    overflow-y: auto;
+    background: #222;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    text-align: left;
+    font-size: 12px;
+  }
+  #battle-log p {
+    margin: 2px 0;
+    color: #ddd;
+  }
+  #battle-log .damage {
+    color: #ff6b6b;
+  }
+  #battle-log .recover {
+    color: #51cf66;
+  }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+  <h1>Aura Farmer</h1>
+
+  <div class="section">
+    <h2>Aura: <span id="aura-count">0</span> / <span id="max-aura">50000</span></h2>
+    <h4>Total Aura Farmada: <span id="total-aura">0</span></h4>
+    <button id="farm-aura">Farmar Aura</button>
+            </div>
+
+  <div class="section">
+    <h3>Minions</h3>
+    <div>Aura por segundo: <span id="aps-count">0</span></div>
+    <button id="buy-minion">Invocar Minion (<span id="minion-cost">10</span> Aura)</button>
+    <div>Minions: <span id="minion-count">0</span></div>
+            </div>
+
+  <div class="section">
+    <h3>Lootbox de Entidades</h3>
+    <div>Aura necessária para lootbox: <span id="lootbox-cost-display">10000</span></div>
+    <button id="open-lootbox">Abrir Lootbox</button>
+    <div id="cards-container" class="cards-grid"></div>
+            </div>
+
+  <div class="section">
+    <div class="tab-container">
+      <div class="tab-buttons">
+        <button class="tab-button active" onclick="showTab('next-upgrade')">Próximo Upgrade</button>
+        <button class="tab-button" onclick="showTab('purchased-upgrades')">Upgrades Aplicados</button>
+        <button class="tab-button" onclick="showTab('battles')">Batalhas</button>
+        </div>
+
+      <div id="next-upgrade" class="tab-content active">
+        <h3>Próximo Upgrade Disponível</h3>
+        <div id="next-upgrade-container"></div>
+        </div>
+
+      <div id="purchased-upgrades" class="tab-content">
+        <h3>Upgrades Aplicados</h3>
+        <div id="purchased-upgrades-container"></div>
+        </div>
+
+      <div id="battles" class="tab-content">
+        <h3>Batalhas Desbloqueadas</h3>
+        <div id="battles-container"></div>
+        </div>
+    </div>
+  </div>
+</div>
+
+    <script>
+let aura = 0;
+let totalAuraFarmed = 0;
+let maxAura = 50000;
+let minions = 0;
+let aps = 0;
+let cards = [];
+
+let clickValue = 1;
+let apsMultiplier = 1;
+let lootboxMultiplier = 1;
+
+let lootboxCost = 10000;
+let minionCost = 10;
+const minionGrowth = 1.10;
+
+// Sistema de tipos com vantagens/desvantagens
+const typeAdvantages = {
+  'infernal': { strong: 'abissal', weak: 'celestial' },
+  'abissal': { strong: 'celestial', weak: 'infernal' },
+  'celestial': { strong: 'infernal', weak: 'abissal' }
+};
+
+// Entidades por tipo
+const entities = {
+  infernal: [
+    {
+      name: "Imp Ardente",
+      type: "infernal",
+      rarity: "common",
+      power: 15,
+      moves: ["Bola de Fogo", "Garra Flamejante", "Explosão Infernal", "Caos Demoníaco"]
+    },
+    {
+      name: "Demônio Menor",
+      type: "infernal", 
+      rarity: "common",
+      power: 25,
+      moves: ["Chama Negra", "Presas Venenosas", "Rugido do Abismo", "Destruição Total"]
+    },
+    {
+      name: "Lorde do Fogo",
+      type: "infernal",
+      rarity: "common", 
+      power: 35,
+      moves: ["Inferno em Chamas", "Punho Flamejante", "Tempestade de Cinzas", "Apocalipse"]
+    },
+    {
+      name: "Dragão Infernal",
+      type: "infernal",
+      rarity: "rare",
+      power: 60,
+      moves: ["Sopro de Fogo", "Asas de Chama", "Caos Elemental", "Destruição Massiva"]
+    },
+    {
+      name: "Lúcifer",
+      type: "infernal",
+      rarity: "rare",
+      power: 85,
+      moves: ["Poder Supremo", "Domínio do Caos", "Inferno Eterno", "Fim dos Tempos"]
+    },
+    {
+      name: "Rei dos Demônios",
+      type: "infernal",
+      rarity: "legendary",
+      power: 120,
+      moves: ["Poder Absoluto", "Caos Infinito", "Destruição Universal", "Fim da Existência"]
+    }
+  ],
+  abissal: [
+    {
+      name: "Peixe Abissal",
+      type: "abissal",
+      rarity: "common",
+      power: 15,
+      moves: ["Mordida Profunda", "Nado das Trevas", "Correnteza Negra", "Abismo Oceânico"]
+    },
+    {
+      name: "Kraken Menor",
+      type: "abissal",
+      rarity: "common", 
+      power: 25,
+      moves: ["Tentáculos Mortais", "Vórtice Marinho", "Trevas Aquáticas", "Profundezas Eternas"]
+    },
+    {
+      name: "Sereia das Trevas",
+      type: "abissal",
+      rarity: "common",
+      power: 35,
+      moves: ["Canto Mortal", "Corrupção Marinha", "Abismo Sem Fim", "Trevas Infinitas"]
+    },
+    {
+      name: "Leviatã",
+      type: "abissal",
+      rarity: "rare",
+      power: 60,
+      moves: ["Tsunami Negro", "Presas Abissais", "Corrupção Total", "Abismo Universal"]
+    },
+    {
+      name: "Cthulhu",
+      type: "abissal",
+      rarity: "rare",
+      power: 85,
+      moves: ["Loucura Cósmica", "Trevas Primordiais", "Corrupção Infinita", "Fim da Sanidade"]
+    },
+    {
+      name: "Deus das Profundezas",
+      type: "abissal",
+      rarity: "legendary",
+      power: 120,
+      moves: ["Poder Primordial", "Abismo Cósmico", "Corrupção Absoluta", "Fim da Realidade"]
+    }
+  ],
+  celestial: [
+    {
+      name: "Anjo Menor",
+      type: "celestial",
+      rarity: "common",
+      power: 15,
+      moves: ["Luz Sagrada", "Asas Divinas", "Bênção Celestial", "Ordem Eterna"]
+    },
+    {
+      name: "Arcanjo",
+      type: "celestial",
+      rarity: "common",
+      power: 25,
+      moves: ["Espada Sagrada", "Proteção Divina", "Luz Infinita", "Justiça Celestial"]
+    },
+    {
+      name: "Serafim",
+      type: "celestial",
+      rarity: "common",
+      power: 35,
+      moves: ["Poder Divino", "Luz Suprema", "Ordem Universal", "Bênção Infinita"]
+    },
+    {
+      name: "Arcanjo Supremo",
+      type: "celestial",
+      rarity: "rare",
+      power: 60,
+      moves: ["Luz Absoluta", "Poder Celestial", "Ordem Cósmica", "Divindade Suprema"]
+    },
+    {
+      name: "Metatron",
+      type: "celestial",
+      rarity: "rare",
+      power: 85,
+      moves: ["Voz de Deus", "Luz Primordial", "Ordem Infinita", "Poder Divino"]
+    },
+    {
+      name: "Deus Supremo",
+      type: "celestial",
+      rarity: "legendary",
+      power: 120,
+      moves: ["Poder Absoluto", "Luz Universal", "Ordem Eterna", "Criação Infinita"]
+    }
+  ]
+};
+
+// Upgrades com sistema progressivo
+let upgrades = [
+  { 
+    name: "Clique mais forte", 
+    cost: 1000, 
+                        unlocked: false,
+    purchased: false,
+    description: "Aumenta a aura farmada por clique em um valor igual ao seu numero de minions",
+    apply: () => { clickValue += minions; } 
+  },
+  { 
+    name: "Minion turbo", 
+    cost: 3000, 
+                        unlocked: false,
+    purchased: false,
+    description: "Dobra a produção de aura dos minions",
+    apply: () => { apsMultiplier *= 2; } 
+  },
+  { 
+    name: "Multiplicação de Minions", 
+    cost: 6000, 
+                        unlocked: false,
+    purchased: false,
+    description: "Dobra a quantidade de minions",
+    apply: () => { minions = minions * 2; } 
+  },
+  { 
+    name: "Aura passiva extra", 
+    cost: 12000, 
+                        unlocked: false,
+    purchased: false,
+    description: "Adiciona 25% de aura por segundo permanentemente",
+    apply: () => { aps += aps * 0.25; } 
+  }
+];
+
+// Gerar 3 chefes aleatórios, um de cada tipo, de raridade rare ou legendary
+let bosses = [];
+function generateBosses() {
+  const types = ['infernal', 'abissal', 'celestial'];
+  types.forEach(type => {
+    const strongEntities = entities[type].filter(e => e.rarity === 'rare' || e.rarity === 'legendary');
+    const randomIndex = Math.floor(Math.random() * strongEntities.length);
+    const boss = {...strongEntities[randomIndex]};
+    boss.maxHp = boss.power * 10;
+    boss.maxEnergy = 100;
+    boss.currentEnergy = 100;
+    boss.attack = Math.floor(boss.power / 5);
+    let multipliers;
+    let costs;
+    if (boss.rarity === 'rare') {
+      multipliers = [1.0, 1.2, 1.4, 0];
+      costs = [20, 40, 60, 0];
+    } else {
+      multipliers = [1.2, 1.4, 1.6, 0];
+      costs = [20, 40, 60, 0];
+    }
+    boss.moves = boss.moves.map((name, i) => ({name, multiplier: multipliers[i], cost: costs[i]}));
+    bosses.push(boss);
+  });
+}
+generateBosses();
+
+let unlockedBosses = new Array(bosses.length).fill(false);
+let defeatedBosses = new Array(bosses.length).fill(false);
+let nextBossToUnlock = 0;
+
+// Variáveis de batalha
+let inBattle = false;
+let currentBossIndex = -1;
+let playerEntities = [];
+let bossCurrentHp = 0;
+let boss = null;
+
+// Elementos
+const auraCountEl = document.getElementById('aura-count');
+const totalAuraEl = document.getElementById('total-aura');
+const maxAuraEl = document.getElementById('max-aura');
+const minionCountEl = document.getElementById('minion-count');
+const apsCountEl = document.getElementById('aps-count');
+const minionCostEl = document.getElementById('minion-cost');
+const lootboxCostEl = document.getElementById('lootbox-cost-display');
+const cardsContainer = document.getElementById('cards-container');
+
+// Farm manual
+document.getElementById('farm-aura').addEventListener('click', () => {
+  const added = Math.min(clickValue, maxAura - aura);
+  aura += added;
+  totalAuraFarmed += added;
+  updateDisplay();
+  updateUpgradeDisplay();
+});
+
+// Comprar minion
+document.getElementById('buy-minion').addEventListener('click', () => {
+  if(aura >= minionCost){
+    aura -= minionCost;
+    minions += 1;
+    aps += 2;
+    minionCost = Math.ceil(minionCost * minionGrowth);
+    updateDisplay();
+    updateUpgradeDisplay();
+                } else {
+    alert('Aura insuficiente!');
+  }
+});
+
+// Produção automática de minions
+setInterval(() => {
+  let production = aps * apsMultiplier;
+  let added = Math.min(production, maxAura - aura);
+  aura += added;
+  totalAuraFarmed += added;
+  updateDisplay();
+  updateUpgradeDisplay();
+}, 1000);
+
+// Lootbox
+document.getElementById('open-lootbox').addEventListener('click', () => {
+  if(aura >= lootboxCost){
+    aura -= lootboxCost;
+    lootboxCost *= 2;
+    const card = generateCard();
+    cards.push(card);
+    displayCards();
+    if (nextBossToUnlock < bosses.length) {
+      unlockedBosses[nextBossToUnlock] = true;
+      alert(`Batalha contra ${bosses[nextBossToUnlock].name} desbloqueada! Vá para a aba Batalhas.`);
+      nextBossToUnlock++;
+    }
+    updateDisplay();
+    updateUpgradeDisplay();
+                } else {
+    alert('Aura insuficiente para abrir lootbox!');
+  }
+});
+
+// Comprar upgrade
+function buyUpgrade(index){
+  let up = upgrades[index];
+  if(up.unlocked && !up.purchased){
+    up.purchased = true;
+    up.apply();
+    alert(`Upgrade "${up.name}" adquirido!`);
+    updateDisplay();
+    updateUpgradeDisplay();
+  }
+}
+
+// Verificar se upgrade pode ser desbloqueado
+function checkUpgradeUnlock(){
+  upgrades.forEach((upgrade, index) => {
+    if(!upgrade.unlocked && totalAuraFarmed >= upgrade.cost){
+      upgrade.unlocked = true;
+                    }
+                });
+            }
+
+// Encontrar próximo upgrade disponível
+function getNextAvailableUpgrade(){
+  for(let i = 0; i < upgrades.length; i++){
+    if(!upgrades[i].purchased){
+      return i;
+    }
+  }
+  return -1; // Todos os upgrades foram comprados
+}
+
+// Função para alternar entre abas
+function showTab(tabName){
+  // Esconder todas as abas
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabContents.forEach(tab => tab.classList.remove('active'));
+  
+  // Remover classe active de todos os botões
+  const tabButtons = document.querySelectorAll('.tab-button');
+  tabButtons.forEach(btn => btn.classList.remove('active'));
+  
+  // Mostrar aba selecionada
+  document.getElementById(tabName).classList.add('active');
+  
+  // Adicionar classe active ao botão clicado
+  event.target.classList.add('active');
+
+  if (tabName === 'next-upgrade') {
+    displayNextUpgrade();
+  } else if (tabName === 'purchased-upgrades') {
+    displayPurchasedUpgrades();
+  } else if (tabName === 'battles') {
+    if (inBattle) {
+      displayBattleScreen();
+    } else {
+      displayBattles();
+    }
+  }
+}
+
+// Funções auxiliares
+function updateDisplay(){
+  auraCountEl.textContent = aura;
+  totalAuraEl.textContent = totalAuraFarmed;
+  maxAuraEl.textContent = maxAura;
+  minionCountEl.textContent = minions;
+  apsCountEl.textContent = aps;
+  minionCostEl.textContent = minionCost;
+  lootboxCostEl.textContent = lootboxCost;
+  checkUpgradeUnlock();
+  updateUpgradeDisplay();
+}
+
+function generateCard(){
+  const types = ['infernal', 'abissal', 'celestial'];
+  const type = types[Math.floor(Math.random() * types.length)];
+  
+  // Probabilidades baseadas na raridade
+  const rarityRoll = Math.random();
+  let rarity;
+  if(rarityRoll < 0.6) {
+    rarity = 'common';
+  } else if(rarityRoll < 0.9) {
+    rarity = 'rare';
+  } else {
+    rarity = 'legendary';
+  }
+  
+  // Filtrar entidades do tipo e raridade
+  const typeEntities = entities[type].filter(entity => entity.rarity === rarity);
+  const entity = typeEntities[Math.floor(Math.random() * typeEntities.length)];
+  
+  let multipliers;
+  let costs;
+  if (rarity === 'common') {
+    multipliers = [0.8, 1.0, 1.2, 0];
+    costs = [20, 40, 60, 0];
+  } else if (rarity === 'rare') {
+    multipliers = [1.0, 1.2, 1.4, 0];
+    costs = [20, 40, 60, 0];
+  } else {
+    multipliers = [1.2, 1.4, 1.6, 0];
+    costs = [20, 40, 60, 0];
+  }
+
+  const moves = entity.moves.map((name, i) => ({name, multiplier: multipliers[i], cost: costs[i]}));
+
+  return {
+    name: entity.name,
+    type: entity.type,
+    rarity: entity.rarity,
+    power: entity.power,
+    moves: moves,
+    maxHp: entity.power * 10,
+    maxEnergy: 100,
+    currentEnergy: 100,
+    attack: Math.floor(entity.power / 5)
+  };
+}
+
+function displayCards(){
+  cardsContainer.innerHTML = '';
+  cards.forEach(card => {
+    const div = document.createElement('div');
+    div.className = `card ${card.type}`;
+    
+    if(card.rarity === 'rare') {
+      div.classList.add('card-rare');
+    } else if(card.rarity === 'legendary') {
+      div.classList.add('card-legendary');
+    }
+    
+    div.innerHTML = `
+      <div class="entity-name">${card.name}</div>
+      <div class="entity-type">
+        <span class="type-badge type-${card.type}">${card.type}</span>
+      </div>
+      <div class="entity-rarity rarity-${card.rarity}">${card.rarity.toUpperCase()}</div>
+      <div class="entity-power">Poder: ${card.power}</div>
+              <div class="entity-moves">
+          <strong>Movimentos:</strong>
+          ${card.moves.map(move => `<div class="move-item">• ${move.name} (x${move.multiplier}) (Cost: ${move.cost})</div>`).join('')}
+        </div>
+    `;
+    cardsContainer.appendChild(div);
+  });
+}
+
+function displayNextUpgrade(){
+  const container = document.getElementById('next-upgrade-container');
+  if (!container) return;
+  
+  container.innerHTML = '';
+                
+  const nextIndex = getNextAvailableUpgrade();
+  
+  if(nextIndex === -1){
+    // Todos os upgrades foram comprados
+    container.innerHTML = `
+      <div class="upgrade-item purchased">
+        <div class="upgrade-info">
+          <div class="upgrade-name">🎉 Todos os Upgrades Concluídos!</div>
+        </div>
+        <div class="upgrade-description">Parabéns! Você desbloqueou todos os upgrades disponíveis.</div>
+        <div class="upgrade-status">✓ Jogador Máximo</div>
+                        </div>
+    `;
+    return;
+  }
+  
+  const upgrade = upgrades[nextIndex];
+  const upgradeDiv = document.createElement('div');
+  upgradeDiv.className = 'upgrade-item';
+  
+  // Determinar classe CSS baseada no status
+  if(upgrade.purchased){
+    upgradeDiv.classList.add('purchased');
+  } else if(upgrade.unlocked){
+    upgradeDiv.classList.add('available');
+  } else {
+    upgradeDiv.classList.add('locked');
+  }
+  
+  // Calcular progresso para upgrades não desbloqueados
+  let progressPercent = 0;
+  let statusText = '';
+  
+  if(upgrade.purchased){
+    statusText = '✓ Comprado';
+  } else if(upgrade.unlocked){
+    statusText = 'Disponível para compra';
+  } else {
+    progressPercent = Math.min((totalAuraFarmed / upgrade.cost) * 100, 100);
+    statusText = `Bloqueado - ${Math.floor(progressPercent)}% do progresso`;
+  }
+  
+  upgradeDiv.innerHTML = `
+    <div class="upgrade-info">
+      <div class="upgrade-name">${upgrade.name}</div>
+      <div class="upgrade-cost">${upgrade.cost.toLocaleString()} Aura</div>
+    </div>
+    <div class="upgrade-description">${upgrade.description}</div>
+    ${!upgrade.purchased && !upgrade.unlocked ? `
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+      </div>
+    ` : ''}
+    <div class="upgrade-status">${statusText}</div>
+    ${upgrade.unlocked && !upgrade.purchased ? `
+      <button onclick="buyUpgrade(${nextIndex})" style="background: #4CAF50; color: white;">
+        Comprar Upgrade
+      </button>
+    ` : ''}
+  `;
+  
+  container.appendChild(upgradeDiv);
+}
+
+function updateUpgradeDisplay() {
+  // Only update if the next-upgrade tab is active
+  const nextUpgradeTab = document.getElementById('next-upgrade');
+  if (nextUpgradeTab && nextUpgradeTab.classList.contains('active')) {
+    displayNextUpgrade();
+  }
+}
+
+function displayPurchasedUpgrades(){
+  const container = document.getElementById('purchased-upgrades-container');
+  container.innerHTML = '';
+  
+  const purchasedUpgrades = upgrades.filter(upgrade => upgrade.purchased);
+  
+  if(purchasedUpgrades.length === 0){
+    container.innerHTML = `
+      <div class="no-upgrades">
+        Nenhum upgrade foi aplicado ainda.
+        <br>Continue farmando Aura para desbloquear upgrades!
+      </div>
+    `;
+    return;
+  }
+  
+  purchasedUpgrades.forEach((upgrade, index) => {
+    const upgradeDiv = document.createElement('div');
+    upgradeDiv.className = 'purchased-upgrade';
+    upgradeDiv.innerHTML = `
+      <div class="purchased-upgrade-name">${index + 1}. ${upgrade.name}</div>
+      <div class="purchased-upgrade-description">${upgrade.description}</div>
+    `;
+    container.appendChild(upgradeDiv);
+  });
+}
+
+function displayBattles() {
+  const container = document.getElementById('battles-container');
+  container.innerHTML = '';
+  let hasBattles = false;
+  unlockedBosses.forEach((unlocked, index) => {
+    if (unlocked && !defeatedBosses[index]) {
+      hasBattles = true;
+      const boss = bosses[index];
+      const div = document.createElement('div');
+      div.className = 'upgrade-item available';
+      div.innerHTML = `
+        <div class="upgrade-info">
+          <div class="upgrade-name">${boss.name} (${boss.type})</div>
+          <div class="upgrade-cost">Poder: ${boss.power}</div>
+        </div>
+        <div class="upgrade-description">Derrote este chefe para aumentar seu max de aura.</div>
+        <button onclick="startBattle(${index})">Iniciar Batalha</button>
+      `;
+      container.appendChild(div);
+    }
+  });
+  if (!hasBattles) {
+    container.innerHTML = '<div class="no-upgrades">Nenhuma batalha disponível no momento. Abra mais lootboxes!</div>';
+  }
+}
+
+function startBattle(index) {
+  if (cards.length === 0) {
+    alert('Você precisa de pelo menos uma entidade para batalhar!');
+    return;
+  }
+  inBattle = true;
+  currentBossIndex = index;
+  boss = bosses[index];
+  playerEntities = cards.map(card => ({
+    ...card,
+    currentHp: card.maxHp,
+    currentEnergy: card.maxEnergy
+  }));
+  bossCurrentHp = boss.maxHp;
+  boss.currentEnergy = boss.maxEnergy;
+  
+  // Clear battle log
+  const battleLog = document.getElementById('battle-log');
+  if (battleLog) {
+    battleLog.innerHTML = '';
+  }
+  
+  displayBattleScreen();
+  
+  // Boss starts first
+  setTimeout(() => {
+    bossAttack();
+    displayBattleScreen();
+  }, 1000);
+}
+
+function displayBattleScreen() {
+  const container = document.getElementById('battles-container');
+  const existingLog = document.getElementById('battle-log');
+  const logContent = existingLog ? existingLog.innerHTML : '';
+  
+  container.innerHTML = `
+    <div class="battle-section">
+      <div class="boss-area">
+        <h4>Chefe: ${boss.name} (${boss.type})</h4>
+        <div>HP: ${bossCurrentHp} / ${boss.maxHp}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${(bossCurrentHp / boss.maxHp * 100)}%"></div>
+        </div>
+        <div>Energy: ${boss.currentEnergy} / ${boss.maxEnergy}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${(boss.currentEnergy / boss.maxEnergy * 100)}%; background: linear-gradient(90deg, #2196F3, #03DAC6);"></div>
+        </div>
+      </div>
+      <div class="player-area">
+        <h4>Suas Entidades:</h4>
+        <div id="player-entities"></div>
+      </div>
+    </div>
+    <div id="battle-log">${logContent}</div>
+    ${!inBattle ? '<button onclick="endBattle()" style="background: #4CAF50; color: white; margin-top: 10px;">End Battle</button>' : ''}
+  `;
+  updatePlayerEntitiesDisplay();
+}
+
+function updatePlayerEntitiesDisplay() {
+  const div = document.getElementById('player-entities');
+  div.innerHTML = '';
+  playerEntities.forEach((entity, i) => {
+    if (entity.currentHp > 0) {
+      const entityDiv = document.createElement('div');
+      entityDiv.className = 'entity-item';
+      entityDiv.innerHTML = `
+        <div class="entity-name">${entity.name} (${entity.type})</div>
+        <div>HP: ${entity.currentHp} / ${entity.maxHp}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${(entity.currentHp / entity.maxHp * 100)}%"></div>
+        </div>
+        <div>Energy: ${entity.currentEnergy} / ${entity.maxEnergy}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${(entity.currentEnergy / entity.maxEnergy * 100)}%; background: linear-gradient(90deg, #2196F3, #03DAC6);"></div>
+        </div>
+        <div>
+          ${entity.moves.map((move, m) => `<button class="move-button" onclick="playerAttack(${i}, ${m})">${move.name} (x${move.multiplier}) (Cost: ${move.cost})</button>`).join('')}
+        </div>
+      `;
+      div.appendChild(entityDiv);
+    }
+  });
+}
+
+function getTypeMultiplier(attackerType, defenderType) {
+  const adv = typeAdvantages[attackerType];
+  if (adv.strong === defenderType) return 1.5;
+  if (adv.weak === defenderType) return 0.5;
+  return 1;
+}
+
+function playerAttack(entityIndex, moveIndex) {
+  if (!inBattle) return;
+  const entity = playerEntities[entityIndex];
+  if (entity.currentHp <= 0) return;
+  const move = entity.moves[moveIndex];
+  
+  // Check energy cost
+  if (entity.currentEnergy < move.cost) {
+    logMessage(`Insufficient energy to use ${move.name}!`, 'damage');
+    return;
+  }
+  
+  // Consume energy
+  entity.currentEnergy -= move.cost;
+  
+  if (moveIndex === 3) {
+    // Recovery move
+    const recoveryPercent = Math.floor(Math.random() * 51) + 50; // 50-100%
+    const recoveryAmount = Math.floor(entity.maxEnergy * recoveryPercent / 100);
+    entity.currentEnergy = Math.min(entity.currentEnergy + recoveryAmount, entity.maxEnergy);
+    logMessage(`${entity.name} used ${move.name} (cost: ${move.cost} energy) and recovered ${recoveryAmount} energy!`, 'recover');
+  } else {
+    // Attack move
+    const advantage = getTypeMultiplier(entity.type, boss.type);
+    const damage = Math.floor((entity.maxHp * 0.15 * (Math.random() * 0.2 + 0.9)) * move.multiplier * advantage);
+    bossCurrentHp -= damage;
+    if (bossCurrentHp < 0) bossCurrentHp = 0;
+    logMessage(`${entity.name} used ${move.name} (cost: ${move.cost} energy) on ${boss.name} causing ${damage} damage!`, 'damage');
+  }
+  
+  displayBattleScreen(); // Re-render to update HP and energy
+  
+  // Check if boss is defeated
+  if (bossCurrentHp <= 0) {
+    winBattle();
+    return;
+  }
+  
+  // Check if all player entities are defeated
+  if (playerEntities.every(e => e.currentHp <= 0)) {
+    loseBattle();
+    return;
+  }
+  
+  // Check if this was the last player entity to act
+  const aliveEntities = playerEntities.filter(e => e.currentHp > 0);
+  const currentEntityIndex = aliveEntities.findIndex(e => e === entity);
+  
+  if (currentEntityIndex === aliveEntities.length - 1) {
+    // All player entities have acted, now it's boss turn
+    setTimeout(() => {
+      bossAttack();
+      displayBattleScreen();
+      
+      // Check for battle end after boss turn
+      if (bossCurrentHp <= 0) {
+        winBattle();
+        return;
+      }
+      if (playerEntities.every(e => e.currentHp <= 0)) {
+        loseBattle();
+        return;
+      }
+    }, 1000);
+  }
+}
+
+function bossAttack() {
+  const alive = playerEntities.filter(e => e.currentHp > 0);
+  if (alive.length === 0) return;
+  
+  // Prioritize damage moves over recovery moves
+  const damageMoves = boss.moves.filter((move, index) => index !== 3 && boss.currentEnergy >= move.cost);
+  const recoveryMoves = boss.moves.filter((move, index) => index === 3 && boss.currentEnergy >= move.cost);
+  
+  let selectedMove, originalMoveIndex;
+  
+  // Try to use damage move if available, otherwise use recovery
+  if (damageMoves.length > 0) {
+    const randomDamageMove = damageMoves[Math.floor(Math.random() * damageMoves.length)];
+    selectedMove = randomDamageMove;
+    originalMoveIndex = boss.moves.indexOf(randomDamageMove);
+  } else if (recoveryMoves.length > 0) {
+    selectedMove = recoveryMoves[0];
+    originalMoveIndex = 3;
+  } else {
+    logMessage(`${boss.name} doesn't have enough energy to attack!`, 'damage');
+    return;
+  }
+  
+  // Consume energy
+  boss.currentEnergy -= selectedMove.cost;
+  
+  if (originalMoveIndex === 3) {
+    // Recovery move
+    const recoveryPercent = Math.floor(Math.random() * 51) + 50; // 50-100%
+    const recoveryAmount = Math.floor(boss.maxEnergy * recoveryPercent / 100);
+    boss.currentEnergy = Math.min(boss.currentEnergy + recoveryAmount, boss.maxEnergy);
+    logMessage(`${boss.name} used ${selectedMove.name} (cost: ${selectedMove.cost} energy) and recovered ${recoveryAmount} energy!`, 'recover');
+  } else {
+    // Attack move
+    const targetIndex = Math.floor(Math.random() * alive.length);
+    const target = alive[targetIndex];
+    const advantage = getTypeMultiplier(boss.type, target.type);
+    const damage = Math.floor((boss.maxHp * 0.15 * (Math.random() * 0.2 + 0.9)) * selectedMove.multiplier * advantage);
+    target.currentHp -= damage;
+    if (target.currentHp < 0) target.currentHp = 0;
+    logMessage(`${boss.name} used ${selectedMove.name} (cost: ${selectedMove.cost} energy) on ${target.name} causing ${damage} damage!`, 'damage');
+  }
+}
+
+function winBattle() {
+  logMessage('Você derrotou o chefe!', 'recover');
+  inBattle = false;
+  defeatedBosses[currentBossIndex] = true;
+  maxAura += 100000;
+  updateDisplay();
+  displayBattleScreen();
+}
+
+function loseBattle() {
+  let lossPercent = Math.floor(Math.random() * 36) + 40;
+  let lostAura = Math.floor(aura * (lossPercent / 100));
+  aura -= lostAura;
+  logMessage(`You lost the battle and ${lostAura} aura (${lossPercent}%)!`, 'damage');
+  inBattle = false;
+  updateDisplay();
+  displayBattleScreen();
+}
+
+function endBattle() {
+  inBattle = false;
+  displayBattles();
+}
+
+function logMessage(msg, type = '') {
+  const log = document.getElementById('battle-log');
+  if (log) {
+    const p = document.createElement('p');
+    p.textContent = msg;
+    if (type) {
+      p.className = type;
+    }
+    log.appendChild(p);
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+// Inicializa display
+updateDisplay();
+    </script>
+
+</body>
+</html>
