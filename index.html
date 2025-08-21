@@ -593,6 +593,7 @@ let currentBossIndex = -1;
 let playerEntities = [];
 let bossCurrentHp = 0;
 let boss = null;
+let entitiesUsedThisTurn = new Set();
 
 // Elementos
 const auraCountEl = document.getElementById('aura-count');
@@ -952,11 +953,12 @@ function startBattle(index) {
   bossCurrentHp = boss.maxHp;
   boss.currentEnergy = boss.maxEnergy;
   
-  // Clear battle log
+  // Clear battle log and turn tracking
   const battleLog = document.getElementById('battle-log');
   if (battleLog) {
     battleLog.innerHTML = '';
   }
+  entitiesUsedThisTurn.clear();
   
   displayBattleScreen();
   
@@ -1003,8 +1005,9 @@ function updatePlayerEntitiesDisplay() {
     if (entity.currentHp > 0) {
       const entityDiv = document.createElement('div');
       entityDiv.className = 'entity-item';
+      const usedThisTurn = entitiesUsedThisTurn.has(i);
       entityDiv.innerHTML = `
-        <div class="entity-name">${entity.name} (${entity.type})</div>
+        
         <div>HP: ${entity.currentHp} / ${entity.maxHp}</div>
         <div class="progress-bar">
           <div class="progress-fill" style="width: ${(entity.currentHp / entity.maxHp * 100)}%"></div>
@@ -1014,7 +1017,7 @@ function updatePlayerEntitiesDisplay() {
           <div class="progress-fill" style="width: ${(entity.currentEnergy / entity.maxEnergy * 100)}%; background: linear-gradient(90deg, #2196F3, #03DAC6);"></div>
         </div>
         <div>
-          ${entity.moves.map((move, m) => `<button class="move-button" onclick="playerAttack(${i}, ${m})">${move.name} (x${move.multiplier}) (Cost: ${move.cost})</button>`).join('')}
+          ${entity.moves.map((move, m) => `<button class="move-button" onclick="playerAttack(${i}, ${m})" ${usedThisTurn ? 'disabled' : ''}>${move.name} (x${move.multiplier}) (Cost: ${move.cost})</button>`).join('')}
         </div>
       `;
       div.appendChild(entityDiv);
@@ -1033,6 +1036,13 @@ function playerAttack(entityIndex, moveIndex) {
   if (!inBattle) return;
   const entity = playerEntities[entityIndex];
   if (entity.currentHp <= 0) return;
+  
+  // Check if entity already used a move this turn
+  if (entitiesUsedThisTurn.has(entityIndex)) {
+    logMessage(`${entity.name} already used a move this turn!`, 'damage');
+    return;
+  }
+  
   const move = entity.moves[moveIndex];
   
   // Check energy cost
@@ -1040,6 +1050,9 @@ function playerAttack(entityIndex, moveIndex) {
     logMessage(`Insufficient energy to use ${move.name}!`, 'damage');
     return;
   }
+  
+  // Mark entity as used this turn
+  entitiesUsedThisTurn.add(entityIndex);
   
   // Consume energy
   entity.currentEnergy -= move.cost;
@@ -1082,6 +1095,9 @@ function playerAttack(entityIndex, moveIndex) {
     setTimeout(() => {
       bossAttack();
       displayBattleScreen();
+      
+      // Reset turn tracking for next player turn
+      entitiesUsedThisTurn.clear();
       
       // Check for battle end after boss turn
       if (bossCurrentHp <= 0) {
